@@ -49,6 +49,7 @@ class Trainer(object):
             print("Using multi scales training")
         else:
             print("train img size is {}".format(cfg.TRAIN["TRAIN_IMG_SIZE"]))
+        # 构建训练数据集
         self.train_dataset = data.Build_Dataset(
             anno_file_type="train", img_size=cfg.TRAIN["TRAIN_IMG_SIZE"]
         )

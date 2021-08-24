@@ -35,9 +35,10 @@ class Build_Dataset(Dataset):
         self.num_classes = len(self.classes)
         # 为每一类标签分配一个索引，构建一个字典
         self.class_to_id = dict(zip(self.classes, range(self.num_classes)))
-        # 自定义的函数
+        # 自定义的加载标签函数，返回所需的标签内容的列表
         self.__annotations = self.__load_annotations(anno_file_type)
 
+    # 获取标签的数量
     def __len__(self):
         return len(self.__annotations)
 
@@ -82,7 +83,9 @@ class Build_Dataset(Dataset):
             mbboxes,
             lbboxes,
         )
+    # # 返回所需的标签内容的列表
     # 加载、读取标签的函数
+    # anno_type为标签类型，共两种：train的标签和test的标签
     def __load_annotations(self, anno_type):
 
         # python中的断言、假设，如果不符合条件，那么则抛出异常，并打印都好后面的信息
@@ -92,15 +95,21 @@ class Build_Dataset(Dataset):
         ], "You must choice one of the 'train' or 'test' for anno_type parameter"
         # cfg.DATA_PATH就是我们在yolov4_config.py中设置data文件夹or目录
         # 也就是说在data文件夹下面有train和test文件夹，分别存放训练和测试图片的所有标签
+        # 然后文件夹下面都有一个名字为"_annotation.txt"的文件，里面是标签的内容
+        # 定义标签的路径
         anno_path = os.path.join(
             cfg.DATA_PATH, anno_type + "_annotation.txt"
         )
+        # filter是过滤函数，有两个形参：判断函数、迭代对象
         with open(anno_path, "r") as f:
+            # 这里是用来跳过空行的也就是把每一行的数据都放到list列表中
+            # 经过上面的分析可知，annotations为包含每张图片标签信息的列表
             annotations = list(filter(lambda x: len(x) > 0, f.readlines()))
         assert len(annotations) > 0, "No images found in {}".format(anno_path)
-
+        # 返回所需的标签内容的列表
         return annotations
 
+    # 数据增强函数，返回增强后的图片和标签
     def __parse_annotation(self, annotation):
         """
         Data augument.
@@ -117,6 +126,7 @@ class Build_Dataset(Dataset):
             [list(map(float, box.split(","))) for box in anno[1:]]
         )
 
+        # 数据增强预处理
         img, bboxes = dataAug.RandomHorizontalFilp()(
             np.copy(img), np.copy(bboxes), img_path
         )
